@@ -1,0 +1,4 @@
+torch
+networkx=2.2
+gensim
+tqdm
