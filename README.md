@@ -4,6 +4,7 @@ Network embedding algorithms implementation with PyTorch.
 
 This implementation runs with Anaconda3.
 
+## Quick Start
 
 Setup the environment
 
@@ -21,4 +22,22 @@ python demo_harp.py
 python demo_ace.py
 ```
 
-The docs are under construction...
+## Docs
+
+Under construction...
+
+- Overall introduction
+- Compile C++ extensions
+- Demos
+- Load datasets
+- Adapt your own coarsening algorithm to HARP or ACE
+- Adapt your own network embedding algorithm to HARP
+- Adapt your own network embedding algorithm to ACE
+
+## Benchmarks
+
+Under construction...
+
+## Citations
+
+Under construction...
