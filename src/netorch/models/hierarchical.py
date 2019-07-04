@@ -62,30 +62,14 @@ class ConcatPCAModel(object):
     def get_embeddings(self):
         return self.embeddings
 
-
-def model_prolong(prev_model, new_model, mapping):
-    prev_emb = prev_model.get_embeddings()
-    prev_ctx = prev_model.get_contexts()
-
-    new_emb = np.ndarray((new_model.graph.number_of_nodes(), new_model.dimension), dtype=np.float32)
-    new_ctx = np.ndarray((new_model.graph.number_of_nodes(), new_model.dimension), dtype=np.float32)
-
-    for super_node, nodes in mapping.items():
-        for node in nodes:
-            new_emb[node] = prev_emb[super_node]
-            new_ctx[node] = prev_ctx[super_node]
-
-    new_model.set_embeddings(new_emb)
-    new_model.set_contexts(new_ctx)
-
-
 class RecursiveProlong(object):
 
-    def __init__(self, graph, dimension, Model, Coarsening):
+    def __init__(self, graph, dimension, Model, Coarsening, prolong_func):
         self.original_graph = graph
         self.dimension = dimension
         self.Model = Model
         self.Coarsening = Coarsening
+        self.prolong_func = prolong_func
 
     def train(self):
         coarsening = self.Coarsening(self.original_graph)
@@ -102,7 +86,7 @@ class RecursiveProlong(object):
             print('Training graph#{} #nodes={} #edges={}'.format(i, graph.number_of_nodes(), graph.number_of_edges()))
             model = self.Model(graph, self.dimension)
             if prev_model is not None:
-                model_prolong(prev_model, model, mapping)
+                self.prolong_func(prev_model, model, mapping)
             if prev_model is None or prev_model.graph.number_of_nodes()<graph.number_of_nodes()*0.95 or graph.number_of_nodes()==self.original_graph.number_of_nodes():
                 model.train()
             prev_model = model
