@@ -25,6 +25,28 @@ class SkipGramNS(nn.Module):
         loss = loss.neg()
         return loss
 
+class TripletEmbedding(nn.Module):
+    def __init__(self, num_nodes, dimension, device='cuda'):
+        super().__init__()
+        self.num_nodes = num_nodes
+        self.dimension = dimension
+        self.device = device
+
+        self.embeddings = nn.Embedding(self.num_nodes, self.dimension).to(device=device)
+        self.embeddings.weight.data.normal_(0.0, 1./sqrt(dimension))
+        self.contexts = nn.Embedding(self.num_nodes, self.dimension).to(device=device)
+        self.contexts.weight.data.normal_(0.0, 1./sqrt(dimension))
+
+    def forward(self, u, v, w):
+        emb_u = self.embeddings(u)
+        ctx_v = self.contexts(v)
+        ctx_w = self.contexts(w)
+        pos_prod = torch.sum(torch.mul(emb_u, ctx_v), dim=1)
+        neg_prod = torch.sum(torch.mul(emb_u, ctx_w), dim=1)
+        loss = torch.sum(nn.functional.logsigmoid(pos_prod-neg_prod))
+        loss = loss.neg()
+        return loss
+
 class ModelIterator(object):
 
     def __init__(self, model, optimizer, scheduler):
@@ -61,5 +83,22 @@ class NodeEmbedding(ModelIterator):
         tv = torch.tensor(v, device=self.model.device, dtype=torch.long)
         tsign = torch.tensor(sign, device=self.model.device, dtype=torch.float)
         loss = self.model(tu, tv, tsign)
+        loss.backward()
+        self.optimizer.step()
+
+class TripletNodeEmbedding(ModelIterator):
+
+    def __init__(self, num_nodes, dimension, learning_rate, device='cuda'):
+        model = TripletEmbedding(num_nodes, dimension, device=device)
+        optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+        scheduler = optim.lr_scheduler.StepLR(optimizer, 1, gamma=0.9)
+        super().__init__(model, optimizer, scheduler)
+
+    def feed(self, u, v, w):
+        self.optimizer.zero_grad()
+        tu = torch.tensor(u, device=self.model.device, dtype=torch.long)
+        tv = torch.tensor(v, device=self.model.device, dtype=torch.long)
+        tw = torch.tensor(w, device=self.model.device, dtype=torch.long)
+        loss = self.model(tu, tv, tw)
         loss.backward()
         self.optimizer.step()

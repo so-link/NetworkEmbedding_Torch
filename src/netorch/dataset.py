@@ -48,3 +48,36 @@ def load_dataset(dataset, dataset_dir='datasets'):
     graph = load_edgelist('{}/{}_edgelist.txt'.format(dataset_dir, dataset))
     labels = load_labels('{}/{}_labels.txt'.format(dataset_dir, dataset))
     return graph, labels
+
+def load_hetero_nodes(file_name):
+    nodes = []
+    with open(file_name) as file:
+        for line in file:
+            node, tag = line.strip().split()
+            nodes.append((node, tag))
+    return nodes
+
+def load_hetero_edges(file_name):
+    edges = []
+    with open(file_name) as file:
+        for line in file:
+            l = line.strip().split()
+            if len(l)==2:
+                edges.append((l[0], l[1], 1.0))
+            else:
+                edges.append((l[0], l[1], float(l[2])))
+    return edges
+
+def load_hetero_graph(nodes_file_name, edges_file_name):
+    nodes = load_hetero_nodes(nodes_file_name)
+    edges = load_hetero_edges(edges_file_name)
+
+    graph = nx.Graph()
+
+    for node, tag in nodes:
+        graph.add_node(node, tag=tag)
+    
+    for u, v, weight in edges:
+        graph.add_edge(u, v, weight=weight)
+    
+    return graph

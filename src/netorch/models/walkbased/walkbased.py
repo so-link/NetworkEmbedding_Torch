@@ -79,3 +79,21 @@ def Node2Vec(graph, *, p, q,
         sampler = NegativeSampling(window_size, batch_size, neg_ratio=neg_ratio, down_sampling=down_sample_threshold),
         model = NodeEmbedding(graph.number_of_nodes(), dimension, learning_rate),
     )
+
+def Triplet(graph,*,
+        dimension = 128,
+        num_walks = 10,
+        walk_length = 80,
+        window_size = 10,
+        iterations = 3,
+        learning_rate = 0.001,
+        batch_size = 10000,
+        down_sample_threshold = 1e-3):
+    return WalkBasedEmbedding(graph,
+        dimension,
+        iterations,
+        walker = Walker(num_walks, walk_length),
+        sampler = TripletSampling(window_size, batch_size, down_sampling=down_sample_threshold),
+        model = TripletNodeEmbedding(graph.number_of_nodes(), dimension, learning_rate),
+    )
+
