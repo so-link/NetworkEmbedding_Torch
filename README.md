@@ -4,6 +4,14 @@ Network embedding algorithms implementation with PyTorch.
 
 This implementation runs with Anaconda3.
 
+## Paper
+
+This repository contains source code of the following papers:
+
+Homepage Augmentation by Predicting Links in Heterogeneous Networks. Jianming Lv, Jiajie Zhong, Weihang Chen, Qinzhe Xiao, Zhenguo Yang, and Qing Li. CIKM 2018. `demo_ehwalk.py`
+
+ACE: Ant Colony Based Multi-Level Network Embedding for Hierarchical Graph Representation Learning. Jianming Lv, Jiajie Zhong, Jintao Liang, and Zhenguo Yang. IEEE Access. `demo_ace.py`
+
 ## Quick Start
 
 Setup the environment
