@@ -8,9 +8,9 @@ This implementation runs with Anaconda3.
 
 This repository contains source code of the following papers:
 
-Homepage Augmentation by Predicting Links in Heterogeneous Networks. Jianming Lv, Jiajie Zhong, Weihang Chen, Qinzhe Xiao, Zhenguo Yang, and Qing Li. CIKM 2018. `demo_ehwalk.py` [Dataset](https://pan.baidu.com/s/1EFVu1aanox4rUc83iSnAjA)
+Homepage Augmentation by Predicting Links in Heterogeneous Networks. Jianming Lv, Jiajie Zhong, Weihang Chen, Qinzhe Xiao, Zhenguo Yang, and Qing Li. CIKM 2018. [demo_ehwalk.py](https://github.com/so-link/NetworkEmbedding_Torch/blob/master/src/demo_ehwalk.py) [Dataset](https://pan.baidu.com/s/1EFVu1aanox4rUc83iSnAjA)
 
-ACE: Ant Colony Based Multi-Level Network Embedding for Hierarchical Graph Representation Learning. Jianming Lv, Jiajie Zhong, Jintao Liang, and Zhenguo Yang. IEEE Access. `demo_ace.py`
+ACE: Ant Colony Based Multi-Level Network Embedding for Hierarchical Graph Representation Learning. Jianming Lv, Jiajie Zhong, Jintao Liang, and Zhenguo Yang. IEEE Access. [demo_ace.py](https://github.com/so-link/NetworkEmbedding_Torch/blob/master/src/demo_ace.py)
 
 ## Quick Start
 
