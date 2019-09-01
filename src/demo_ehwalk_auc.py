@@ -25,7 +25,6 @@ def main():
             print('{} {}'.format(author, score))
             res.append(score)
         except ValueError:
-            res.append(1.0)
             print('error {}'.format(author))
     print(np.average(res))
 
