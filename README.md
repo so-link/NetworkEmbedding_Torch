@@ -52,4 +52,4 @@ Under construction...
 
 ## Contact
 
-If you have any question, please contact `sunwback@qq.com`.
+If you have any question, please create an issue, or contact `sunwback@qq.com`.
