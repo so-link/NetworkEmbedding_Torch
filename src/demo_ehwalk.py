@@ -16,7 +16,7 @@ from netorch.models.walkbased.sampling import TripletSampling
 from netorch.models.common import TripletNodeEmbedding
 from hetero.heterowalk import hetero_walk, hetero_walker
 
-DATASET_DOWNLOAD_LINK = 'https://so-link.org/xxxxxx/'
+DATASET_DOWNLOAD_LINK = 'https://pan.baidu.com/s/1EFVu1aanox4rUc83iSnAjA'
 
 DATASET_DIR = 'datasets/scholar-graph'
 NODES_TXT = '{}/nodes.txt'.format(DATASET_DIR)
@@ -85,7 +85,7 @@ def filter_subnetwork_sequences(tag, lookup, sequences):
         seqs.append([lookup.g_index_to_t_index(node) for node in seq if lookup.g_index_to_tag(node)==tag])
     return seqs
 
-def subnetwork_embedding(tag, lookup, sequences, iterations=5, batch_size=10000, lr=0.01):
+def subnetwork_embedding(tag, lookup, sequences, iterations=5, batch_size=2000, lr=0.005):
     num_nodes = lookup.num_tag_nodes(tag)
     subnetwork_seqs = filter_subnetwork_sequences(tag, lookup, sequences)
     embeddings = network_embedding(num_nodes, subnetwork_seqs, iterations, batch_size, lr)
@@ -117,7 +117,11 @@ def make_embedding_edges(tag, embedding, lookup, graph, min_degree):
     for node in subnetwork.nodes:
         if subnetwork.degree(node) > min_degree:
             for neibor in subnetwork.neighbors(node):
-                graph[node][neibor]['weight'] = dot_prod[lookup.label_to_t_index(node)][lookup.label_to_t_index(node)]
+                val = dot_prod[lookup.label_to_t_index(node)][lookup.label_to_t_index(node)]
+                if val > 0.5:
+                    graph[node][neibor]['weight'] = val
+                else:
+                    graph.remove_edge(node, neibor)
         else:
             t_index = lookup.label_to_t_index(node)
             k_th_max = np.partition(dot_prod[t_index], min_degree)[min_degree]
@@ -134,43 +138,42 @@ def make_embedding_edges(tag, embedding, lookup, graph, min_degree):
 
 
 def main():
-    if not check_dataset():
-        exit()
     print('loading')
     graph = load_hetero_graph(NODES_TXT, EDGES_TXT)
     ground_truth = load_author_paper_label(GROUND_TRUTH_TXT)
-
     print('build subgraph')
     g_static = make_subnetwork(static_subnetworks, graph)
     lookup_g_static = HeteroGraphLookup(g_static)
     g_n_static = nx.convert_node_labels_to_integers(g_static)
 
     print('heterogeneous random walk')
-    walk_sequences = hetero_walk(g_n_static, num_walks=5, walk_length=80)
+    walk_sequences = hetero_walk(g_n_static, num_walks=10, walk_length=80)
 
     for tag in static_subnetworks:
         print("train subnetwork {}".format(tag))
         embedding = subnetwork_embedding(tag, lookup_g_static, walk_sequences)
         tag_category = load_category_node('{}/{}_category.txt'.format(DATASET_DIR, tag))
         print("visualize embedding {}".format(tag))
-        # visualize_embedding(tag, lookup_g_static, embedding, tag_category) # Very time-consuming. 
-        #                                                                    # Comment this step to make the whole process faster.
+        visualize_embedding(tag, lookup_g_static, embedding, tag_category)
         print("construct embedding network of {}".format(tag))
-        make_embedding_edges(tag, embedding, lookup_g_static, graph, min_degree=50)
+        make_embedding_edges(tag, embedding, lookup_g_static, graph, min_degree=25)
 
+    print('calculate author paper score')
     lookup_g = HeteroGraphLookup(graph)
     graph_n = nx.convert_node_labels_to_integers(graph)
-    walker = hetero_walker(graph_n, num_walks=1000, walk_length=10)
+    walk, _ = hetero_walker(graph_n, num_walks=1000, walk_length=10)
     output = open(RESULT_TXT, 'w')
     for author, paper, label in ground_truth:
-        cnt = 0
-        seqs = walker(lookup_g.label_to_g_index('#'+paper))
+        score = 0
+        seqs = walk(lookup_g.label_to_g_index('#'+paper))
         for seq in seqs:
-            cnt += seq.count(lookup_g.label_to_g_index('@'+author))
-        output.write('{} {} {} {}\n'.format(author, paper, label, cnt/1000))
+            score += 1 if seq.count(lookup_g.label_to_g_index('@'+author)) > 0 else 0
+        output.write('{} {} {} {}\n'.format(author, paper, label, score))
     output.close()
 
 
 
 if __name__ == '__main__':
+    if not check_dataset():
+        exit()
     main()

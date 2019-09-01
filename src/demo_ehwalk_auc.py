@@ -22,7 +22,7 @@ def main():
     for author, (labels, results) in author_result.items():
         try:
             score = roc_auc_score(np.array(labels), np.array(results))
-            print('{} {}'.format(author, score))
+            print('{} {} {}'.format(len(labels), author, score))
             res.append(score)
         except ValueError:
             print('error {}'.format(author))

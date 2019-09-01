@@ -28,6 +28,7 @@ def trans_prob_normalization(u, neighbors, tags, weights):
 def init_walker(graph):
     walker = CWalker()
     walker.set_node_list(list(graph.nodes))
+    trans_weights = {}
     for u in graph.nodes:
         neibors = list(graph.neighbors(u))
         tags = [graph.nodes[v]['tag'] for v in neibors]
@@ -35,15 +36,23 @@ def init_walker(graph):
         neibors, weights = trans_prob_normalization(u, neibors, tags, weights)
 
         walker.set_transition_weights(u, neibors, weights)
-    return walker
+        trans_weights[u] = {neibor:w for neibor, w in zip(neibors, weights)}
+    return walker, trans_weights
 
 def hetero_walk(graph, num_walks=10, walk_length=80):
-    walker = init_walker(graph)
+    walker, _ = init_walker(graph)
     sequences = walker.walk(num_walks, walk_length, mp.cpu_count())
     return sequences
 
 def hetero_walker(graph, num_walks=10, walk_length=80):
-    walker = init_walker(graph)
-    return lambda start_node: [walker.simulate_walk(start_node, walk_length) for i in range(num_walks)]
+    walker, weights = init_walker(graph)
+    def walk(start_node):
+        return [walker.simulate_walk(start_node, walk_length) for i in range(num_walks)]
+    def path_score(path):
+        score = 1.0
+        for i in range(1, len(path)):
+            score *= weights[path[i-1]][path[i]]
+        return score
+    return walk, path_score
 
 
